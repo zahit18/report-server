@@ -1,13 +1,28 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { PrinterService } from 'src/printer/printer.service';
+import { getHelloWorldReport } from 'src/reports';
+
 
 @Injectable()
 export class BasicReportsService extends PrismaClient implements OnModuleInit {
+
     async onModuleInit() {
-      await this.$connect();
+        await this.$connect();
     }
 
-    async hello() {
-        return await this.employees.findFirst()
+    constructor(
+        private readonly printService: PrinterService
+    ) {
+        super();
+    }
+
+    hello() {
+
+        const docDefinition = getHelloWorldReport({name: 'BICHO'});
+
+        const doc = this.printService.createPdf(docDefinition);
+
+        return doc;
     }
 }
