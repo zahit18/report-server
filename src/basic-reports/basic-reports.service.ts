@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrinterService } from 'src/printer/printer.service';
-import { getEmploymentLetterByIdReport, getEmploymentLetterReport, getHelloWorldReport } from 'src/reports';
+import { getEmploymentLetterByIdReport, getEmploymentLetterReport, getHelloWorldReport, getCountriesReport } from 'src/reports';
 
 
 @Injectable()
@@ -50,6 +50,22 @@ export class BasicReportsService extends PrismaClient implements OnModuleInit {
             employerCompany: 'Tralalero Tralala Inc'
         });
         const doc = this.printService.createPdf(docDefinition);
+        return doc;
+    }
+
+    // COUNTRY
+    async getCountryReport() {
+
+        const countries = await this.countries.findMany({
+            where: {
+                local_name: {
+                    not: null
+                }
+            }
+        })
+
+        const docDefinition = getCountriesReport({countries});
+        const doc = await this.printService.createPdf(docDefinition);
         return doc;
     }
 
