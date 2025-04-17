@@ -1,5 +1,5 @@
 import { Content } from "pdfmake/interfaces";
-import { DateFormater } from "src/helpers/date-formatter";
+import { DateFormater } from "src/helpers/";
 
 interface HeaderOptions {
     title?: string;
