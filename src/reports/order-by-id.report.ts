@@ -22,8 +22,56 @@ const styles: StyleDictionary = {
     }
 }
 
-export const orderByIdReport = (): TDocumentDefinitions => {
+export interface CompleteOrder {
+    order_id: number;
+    customer_id: number;
+    order_date: Date;
+    customers: Customers;
+    order_details: OrderDetail[];
+}
 
+export interface Customers {
+    customer_id: number;
+    customer_name: string;
+    contact_name: string;
+    address: string;
+    city: string;
+    postal_code: string;
+    country: string;
+}
+
+export interface OrderDetail {
+    order_detail_id: number;
+    order_id: number;
+    product_id: number;
+    quantity: number;
+    products: Products;
+}
+
+export interface Products {
+    product_id: number;
+    product_name: string;
+    category_id: number;
+    unit: string;
+    price: string;
+}
+
+
+interface ReportValues {
+    title?: string;
+    subTitle?: string;
+    data: CompleteOrder
+}
+
+export const orderByIdReport = (values: ReportValues): TDocumentDefinitions => {
+
+    const { data } = values
+
+    const { customers, order_details } = data
+
+    const subTotal = order_details.reduce((acc, detail) => acc + detail.quantity * +detail.products.price, 0)
+
+    const total = subTotal * 1.15
     return {
         styles: styles,
         header: logo,
@@ -44,8 +92,8 @@ export const orderByIdReport = (): TDocumentDefinitions => {
                     {
                         text:
                             [
-                                { text: 'Recibo No. 2345\n', bold: true, fontSize: 16 },
-                                `Fecha del recibo: ${DateFormater.getDDMMMMYYYY(new Date())}\nPagar antes de: ${DateFormater.getDDMMMMYYYY(new Date())}`
+                                { text: `Recibo No. ${data.order_id}\n`, bold: true, fontSize: 16 },
+                                `Fecha del recibo: ${DateFormater.getDDMMMMYYYY(data.order_date)}\nPagar antes de: ${DateFormater.getDDMMMMYYYY(new Date())}`
                             ],
                         alignment: 'right',
                     }
@@ -60,8 +108,8 @@ export const orderByIdReport = (): TDocumentDefinitions => {
                 text:
                     [
                         { text: `Cobrar a: \n`, style: 'subHeader' },
-                        `Razon Social: Richter Supermarkt Michael Holz
-                        Grenzacherweg 237`
+                        `Razon Social: ${customers.contact_name}
+                        Contacto: ${customers.contact_name}`
                     ]
             },
             // Table del detalle de la order
@@ -74,12 +122,22 @@ export const orderByIdReport = (): TDocumentDefinitions => {
                     body: [
                         ['ID', 'Descripcion', 'Cantidad', 'Precio', 'Total'],
 
-                        ['1', 'Producto 1', '1', '100', CurrencyFormater.formatCurrency(100)],
-                        ['1', 'Producto 1', '1', '100', CurrencyFormater.formatCurrency(100)],
-                        ['1', 'Producto 1', '1', '100', CurrencyFormater.formatCurrency(100)],
-                        ['1', 'Producto 1', '1', '100', CurrencyFormater.formatCurrency(100)],
-                        ['1', 'Producto 1', '1', '100', CurrencyFormater.formatCurrency(100)],
-                        ['1', 'Producto 1', '1', '100', { text: CurrencyFormater.formatCurrency(1500), alignment: 'right' }],
+                        ...order_details.map((detail) => [
+                            detail.order_detail_id.toString(),
+                            detail.products.product_name,
+                            {
+                                text: detail.quantity.toString(),
+                                alignment: 'center'
+                            },
+                            {
+                                text: CurrencyFormater.formatCurrency(+detail.products.price),
+                                alignment: 'right'
+                            },
+                            {
+                                text: CurrencyFormater.formatCurrency(+detail.products.price * detail.quantity),
+                                alignment: 'right'
+                            }
+                        ])
                     ]
                 }
             },
@@ -100,14 +158,14 @@ export const orderByIdReport = (): TDocumentDefinitions => {
                                 [
                                     'Subtotal',
                                     {
-                                        text: CurrencyFormater.formatCurrency(120),
+                                        text: CurrencyFormater.formatCurrency(subTotal),
                                         alignment: 'right'
                                     }
                                 ],
                                 [
                                     { text: 'Total', bold: true },
                                     {
-                                        text: CurrencyFormater.formatCurrency(150),
+                                        text: CurrencyFormater.formatCurrency(total),
                                         alignment: 'right',
                                         bold: true
                                     },
