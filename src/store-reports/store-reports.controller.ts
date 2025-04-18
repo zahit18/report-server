@@ -16,4 +16,15 @@ export class StoreReportsController {
     pdfDoc.end();
   }
 
+  // SVG
+    @Get('svg-report')
+  async getSVGReport(@Res() response: Response) {
+    const pdfDoc = await this.storeReportsService.getSVGReport();
+
+    response.setHeader('Content-Type', 'application/pdf');
+    pdfDoc.info.Title = 'Hola-Mundo'
+    pdfDoc.pipe(response);
+    pdfDoc.end();
+  }
+
 }
