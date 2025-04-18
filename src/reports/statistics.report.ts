@@ -1,5 +1,6 @@
 import { TDocumentDefinitions } from "pdfmake/interfaces"
-import * as Utils from 'src/helpers/chart-utils'
+import { generateDonutChart } from "./charts/donut.chart";
+import { headerSection } from "./sections/header-section";
 
 interface TopCountry {
     country: string | null;
@@ -12,57 +13,53 @@ interface ReportOptions {
     topCountries: TopCountry[];
 }
 
-const generateTopCountryDonut = async (topCountries: TopCountry[]): Promise<string> => {
-
-    const DATA_COUNT = 5;
-    const NUMBER_CFG = { count: DATA_COUNT, min: 0, max: 100 };
-
-    const data = {
-        labels: topCountries.map((country) => country.country),
-        datasets: [
-            {
-                label: 'Dataset 1',
-                data: topCountries.map((country) => country.customers),
-                //backgroundColor: Object.values(Utils.CHART_COLORS),
-            }
-        ]
-    };
-
-    const config = {
-        type: 'doughnut',
-        data: data,
-        options: {
-            legend: {
-                position: 'top',
-            },
-            plugins: {
-                datalabels: {
-                    color: 'white',
-                    font: {
-                        weight: 'bold',
-                        size: 14
-                    }
-                    //text: 'Chart.js Doughnut Chart'
-                }
-            }
-        },
-    };
-
-    return Utils.chartJsToImage(config)
-}
-
 export const statisticsReport = async (options: ReportOptions): Promise<TDocumentDefinitions> => {
 
-    const donut = await generateTopCountryDonut(options.topCountries)
+    const donutChart = await generateDonutChart({
+        entries: options.topCountries.map((c) => ({
+            label: c.country,
+            value: +c.customers,
+        })),
+        position: "left"
+    })
 
     const docDefinition: TDocumentDefinitions = {
-        content:
-            [
-                {
-                    image: donut,
-                    width: 500
-                }
-            ]
+        pageMargins: [40, 100, 40, 60],
+        header: headerSection({
+            title: options.title ?? 'Estadisticas de clientes',
+            subtitle: options.subTitle ?? 'Top 10 paises con mas clientes'
+        }),
+        content: [
+            {
+                columns: [
+                    {
+                        stack: [
+                            {
+                                text: '10 paises con mas clientes',
+                                alignment: 'center',
+                                marginBottom: 10
+                            },
+                            {
+                                image: donutChart,
+                                width: 320
+                            }
+                        ]
+                    },
+                    {
+                        layout: 'lightHorizontalLines',
+                        width: 'auto',
+                        table: {
+                            headerRows: 1,
+                            widths: [100, 'auto'],
+                            body: [
+                                ['Pais', 'Clientes'],
+                                ...options.topCountries.map((c) => [c.country ?? '', c.customers])
+                            ]
+                        }
+                    }
+                ]
+            },
+        ]
     }
 
     return docDefinition
