@@ -1,6 +1,6 @@
 import { TDocumentDefinitions } from "pdfmake/interfaces"
-import { generateDonutChart } from "./charts/donut.chart";
 import { headerSection } from "./sections/header-section";
+import { generateDonutChart, getLineChart, getBarsChart } from "./charts/";
 
 interface TopCountry {
     country: string | null;
@@ -15,13 +15,20 @@ interface ReportOptions {
 
 export const statisticsReport = async (options: ReportOptions): Promise<TDocumentDefinitions> => {
 
-    const donutChart = await generateDonutChart({
-        entries: options.topCountries.map((c) => ({
-            label: c.country,
-            value: +c.customers,
-        })),
-        position: "left"
-    })
+    // Optimizar dos awaits
+    const [donutChart, lineChart, barsChart, barsChart2] = await Promise.all([
+        generateDonutChart({
+            entries: options.topCountries.map((c) => ({
+                label: c.country,
+                value: +c.customers,
+            })),
+            position: "left"
+        }), 
+        getLineChart(),
+        getBarsChart(),
+        getBarsChart()
+
+    ])
 
     const docDefinition: TDocumentDefinitions = {
         pageMargins: [40, 100, 40, 60],
@@ -31,6 +38,7 @@ export const statisticsReport = async (options: ReportOptions): Promise<TDocumen
         }),
         content: [
             {
+                //#region ----- Donut Chart -----
                 columns: [
                     {
                         stack: [
@@ -58,7 +66,29 @@ export const statisticsReport = async (options: ReportOptions): Promise<TDocumen
                         }
                     }
                 ]
+                //#endregion ----- Donut Chart -----
             },
+            {
+                //#region  ----- Line Chart -----
+                image: lineChart ?? '',
+                width: 500,
+                marginTop: 20
+                //#endregion
+            },
+            {
+                columnGap: 10,
+                marginTop: 20,
+                columns: [
+                    {
+                        image: barsChart,
+                        width: 250
+                    },
+                    {
+                        image: barsChart2,
+                        width: 250
+                    }
+                ]
+            }
         ]
     }
 

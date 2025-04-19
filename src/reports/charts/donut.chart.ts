@@ -9,7 +9,6 @@ interface DonutOptions {
     position?: 'left' | 'right' | 'top' | 'bottom',
     entries: DonutEntry[]
 }
-
 export const generateDonutChart = async (options: DonutOptions): Promise<string> => {
 
     const {position = 'top'} = options
