@@ -8,70 +8,50 @@ interface HeaderOptions {
     showDate?: string;
 }
 
-const logo: Content = {
-    image: 'src/assets/tucan-code-logo.png',
-    width: 100,
-    height: 100,
-    alignment: 'center',
-    margin: [0, 0, 0, 20]
-}
-
-const currentDate: Content = {
-    text: DateFormater.getDDMMMMYYYY(new Date()),
-    alignment: 'right',
-    margin: [20, 20],
-}
-
 export const headerSection = (options: HeaderOptions): Content => {
+    const { title, subtitle, showDate = true, showLogo = true } = options;
 
-    const { title, subtitle, showDate = true, showLogo = true } = options
-
-    const headerLogo: Content = showLogo ? logo : '';
-
-    const headerDate: Content = showDate ? currentDate : ''
-
-    const headerSubtitle: Content = subtitle
-    ? {
-        text: subtitle,
+    const headerLogo: Content = showLogo ? {
+        image: 'src/assets/tucan-code-logo.png',
+        width: 80,
+        height: 80,
         alignment: 'center',
-        margin: [0, 2, 0, 0],
-        style: {
-            fontSize: 16,
-            //bold: true
-        }
-    }
-    : ''
+        margin: [0, 0, 0, 0]
+    } : { text: '' };
 
-    const headerTitle: Content = title
-        ? {
-            stack: [
-                {
-                    text: title,
-                    alignment: 'center',
-                    margin: [0, 15, 0, 0],
-                    style: {
-                        bold: true,
-                        fontSize: 22
-                    }
-                },
-                headerSubtitle
-            ],
-            style: { alignment: 'center' }
+    const headerDate: Content = showDate ? {
+        text: DateFormater.getDDMMMMYYYY(new Date()),
+        alignment: 'right',
+        margin: [10, 10, 20, 0] // [left, top, right, bottom]
+    } : { text: '' };
 
-            //     text: title,
-            //     style: {
-            //         bold: true,
-            //         alignment: 'center'
-            //     }
-        }
-        : ''
+    const headerSubtitle: Content = subtitle ? {
+        text: subtitle,
+        margin: [0, 5, 0, 0],
+        fontSize: 14
+    } : { text: '' };
+
+    const headerTitleStack: Content = title ? {
+        stack: [
+            {
+                text: title,
+                fontSize: 20,
+                bold: true,
+                margin: [0, 0, 0, 0]
+            },
+            headerSubtitle
+        ],
+        alignment: 'center',
+        margin: [0, 10, 0, 0]
+    } : { text: '' };
 
     return {
         columns: [
-            headerLogo,
-            headerTitle,
-            headerDate
-        ]
-    }
-
-}
+            { width: '20%', stack: [headerLogo] },
+            { width: '*', stack: [headerTitleStack], alignment: 'center' },
+            { width: '20%', stack: [headerDate], alignment: 'right' }
+        ],
+        columnGap: 10,
+        margin: [0, 10, 0, 10]
+    };
+};
